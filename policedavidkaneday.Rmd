@@ -1,0 +1,55 @@
+---
+title: "Police"
+author: "Aneetej A"
+date: "6/10/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+```
+
+
+```{r get-data, include=FALSE}
+echo = FALSE
+raw_data <- read_csv("https://raw.githubusercontent.com/Financial-Times/police-misconduct-complaints-analysis/main/output/philly_clean.csv") %>% 
+  select(officer_id, po_race, po_sex)
+```
+
+```{r, clean_data}
+echo=FALSE
+ clean_data <- raw_data %>% 
+  group_by(officer_id) %>% 
+  summarise(total = n()) %>% 
+  arrange(desc(total)) %>% 
+  mutate(officer_id = as.character(officer_id))
+clean_data
+  
+```
+
+
+
+```{r}
+echo=FALSE
+clean_data <- raw_data %>% 
+  group_by(officer_id) %>% 
+  summarise(total = n()) %>% 
+  mutate(compl_dec = ntile(total, 10)) %>% 
+  group_by(compl_dec) %>% 
+  summarize(compl_total = sum(total)) %>% 
+  mutate(compl_percentage = compl_total/sum(compl_total))
+```
+
+```{r}
+echo = FALSE
+clean_data %>% 
+  ggplot(mapping = aes(x = compl_dec, y = compl_percentage)) +
+    geom_col(fill = "steelblue") + scale_x_continuous(breaks = 1:10)+
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1))+
+    labs(title = "Complaints about Police Officers as Deciles",
+         subtitle = "", x = "Decile",y = "Percent of Complaints",caption = "Police Data")+theme_minimal() 
+  
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
